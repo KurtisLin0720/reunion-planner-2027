@@ -16,6 +16,7 @@ button,input{font:inherit}button{cursor:pointer}.wrap{max-width:1120px;margin:au
 <header class="top"><div class="brand"><div class="logo">✦</div><div>Reunion Planner<small>CLASS REUNION · 2027</small></div></div><button class="navbtn" id="adminNav">主辦人管理 ↗</button></header>
 <main id="studentView">
 <section class="hero"><div><div class="eyebrow">LET'S MEET AGAIN</div><h1>好久不見，<br><span>一起約個時間。</span></h1><p>先把已經有安排、無法參加的日期標記起來。讓我們找出最多人都能出席的那一天。</p></div><div class="hero-art"><div class="art-tag">SAVE THE DATE</div><div class="art-title">The best day<br>is our day.</div><div class="art-date">JUNE — AUGUST 2027</div><div class="art-calendar"><b>2027 · JUN</b><div class="mini-grid"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div></div></section>
+<section class="how"><div><span class="num">1</span><div><b>標記不能參加的日子</b><p>翻閱六月到八月月曆，點選已安排的日期。</p></div></div><div><span class="num">2</span><div><b>送出回覆</b><p>系統會保存你的日期，並產生專屬修改連結。</p></div></div><div><span class="num">3</span><div><b>一起決定日期</b><p>主辦人會統計大家都方便的日期。</p></div></div></section>
 <section class="panel">
 <div class="panelhead"><div><h2 id="formTitle">留下你的時間</h2><div class="sub">姓名必填。請點選你「已經有安排、不能參加」的日期。</div></div><span class="step">STEP 01 / 02</span></div>
 <div class="name-row"><div class="field"><label for="name">你的姓名</label><input id="name" maxlength="60" placeholder="請輸入姓名，例如：王小明" autocomplete="name"></div></div>
@@ -25,7 +26,7 @@ button,input{font:inherit}button{cursor:pointer}.wrap{max-width:1120px;margin:au
 <div class="notice" id="notice"></div>
 <div class="result" id="result"><h3>✓ 已成功儲存！</h3><div class="sub">這是你的專屬修改連結。請先複製並保存；之後若行程有變，可以透過這個連結回來修改。</div><div class="linkbox"><input id="editLink" readonly><button class="copy" id="copyLink">複製連結</button></div></div>
 </section>
-<section class="how"><div><span class="num">1</span><div><b>標記不能參加的日子</b><p>翻閱六月到八月月曆，點選已安排的日期。</p></div></div><div><span class="num">2</span><div><b>送出回覆</b><p>系統會保存你的日期，並產生專屬修改連結。</p></div></div><div><span class="num">3</span><div><b>一起決定日期</b><p>主辦人會統計大家都方便的日期。</p></div></div></section>
+
 </main>
 <main id="adminView" class="admin">
 <div class="panel"><div class="panelhead"><div><div class="eyebrow">ORGANIZER DASHBOARD</div><h2>同學會日期總覽</h2><div class="sub">查看回覆、比較可出席人數，找出最適合的日期。</div></div><span class="step">ADMIN</span></div>
@@ -93,9 +94,18 @@ $("submitBtn").onclick=async()=>{
 $("copyLink").onclick=async()=>{try{await navigator.clipboard.writeText($("editLink").value);$("copyLink").textContent="已複製 ✓";setTimeout(()=>$("copyLink").textContent="複製連結",1800);}catch{$("editLink").select();document.execCommand("copy");}};
 function showAdmin(){ $("studentView").classList.add("hidden");$("adminView").classList.add("show");history.replaceState(null,"",location.pathname+"?admin=1");}
 function showStudent(){ $("studentView").classList.remove("hidden");$("adminView").classList.remove("show");history.replaceState(null,"",location.pathname);}
-$("adminNav").onclick=()=>showAdmin();
-if(new URLSearchParams(location.search).has("admin"))showAdmin();
-$("signupBtn").onclick=async()=>{\n const email=$("adminEmail").value.trim(),password=$("adminPassword").value;\n if(!email||password.length<8){notify($("loginNotice"),"請輸入 Email，並設定至少 8 個字元的密碼。","err");return;}\n try{const {data,error}=await supabase.auth.signUp({email,password});if(error)throw error;const uid=data.user?.id||"（未取得）";notify($("loginNotice"),"帳號已建立。請完成 Email 驗證（若有收到驗證信），並把這個 User ID 提供給專案管理者授權： "+uid,"ok");}\n catch(e){notify($("loginNotice"),"建立帳號失敗："+e.message,"err");}\n};\n$("loginBtn").onclick=async()=>{
+$("adminNav").onclick=()=>{
+ if($("adminView").classList.contains("show")){showStudent();$("adminNav").textContent="主辦人管理 ↗";}
+ else{showAdmin();$("adminNav").textContent="返回填寫頁 ↗";}
+};
+if(new URLSearchParams(location.search).has("admin")){$("adminNav").textContent="返回填寫頁 ↗";showAdmin();}
+$("signupBtn").onclick=async()=>{
+ const email=$("adminEmail").value.trim(),password=$("adminPassword").value;
+ if(!email||password.length<8){notify($("loginNotice"),"請輸入 Email，並設定至少 8 個字元的密碼。","err");return;}
+ try{const {data,error}=await supabase.auth.signUp({email,password});if(error)throw error;const uid=data.user?.id||"（未取得）";notify($("loginNotice"),"帳號已建立。請完成 Email 驗證（若有收到驗證信），並把這個 User ID 提供給專案管理者授權： "+uid,"ok");}
+ catch(e){notify($("loginNotice"),"建立帳號失敗："+e.message,"err");}
+};
+$("loginBtn").onclick=async()=>{
  const email=$("adminEmail").value.trim(),password=$("adminPassword").value;
  try{const {data,error}=await supabase.auth.signInWithPassword({email,password});if(error)throw error;await loadAdmin(data.session.access_token);}
  catch(e){notify($("loginNotice"),"登入失敗："+e.message,"err");}
