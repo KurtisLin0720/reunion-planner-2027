@@ -29,7 +29,7 @@ button,input{font:inherit}button{cursor:pointer}.wrap{max-width:1120px;margin:au
 </main>
 <main id="adminView" class="admin">
 <div class="panel"><div class="panelhead"><div><div class="eyebrow">ORGANIZER DASHBOARD</div><h2>同學會日期總覽</h2><div class="sub">查看回覆、比較可出席人數，找出最適合的日期。</div></div><span class="step">ADMIN</span></div>
-<div id="adminLogin" class="admin-login"><h3>主辦人登入</h3><p class="sub">請使用已獲授權的主辦人帳號登入。</p><div class="field"><label for="adminEmail">電子郵件</label><input id="adminEmail" type="email" placeholder="Email" autocomplete="username"></div><div class="field" style="margin-top:12px"><label for="adminPassword">密碼</label><input id="adminPassword" type="password" placeholder="密碼" autocomplete="current-password"></div><button class="primary" id="loginBtn" style="margin-top:16px;width:100%">登入管理頁</button><div class="notice" id="loginNotice"></div></div>
+<div id="adminLogin" class="admin-login"><h3>主辦人登入</h3><p class="sub">請使用已獲授權的主辦人帳號登入。</p><div class="field"><label for="adminEmail">電子郵件</label><input id="adminEmail" type="email" placeholder="Email" autocomplete="username"></div><div class="field" style="margin-top:12px"><label for="adminPassword">密碼</label><input id="adminPassword" type="password" placeholder="密碼" autocomplete="current-password"></div><button class="primary" id="loginBtn" style="margin-top:16px;width:100%">登入管理頁</button><button class="secondary" id="signupBtn" style="margin-top:10px;width:100%">首次使用？建立主辦人帳號</button><div class="sub" style="margin-top:10px">建立帳號後，請把系統顯示的 User ID 提供給專案管理者加入授權名單。未授權帳號無法查看任何同學資料。</div><div class="notice" id="loginNotice"></div></div>
 <div id="adminContent" class="hidden"><div class="adminbar"><div class="sub" id="responseLabel">目前收到 0 份回覆</div><div><button class="secondary" id="refreshAdmin">重新整理</button> <button class="secondary" id="csvBtn">匯出 CSV ↓</button> <button class="secondary" id="logoutBtn">登出</button></div></div>
 <div class="stats"><div class="stat"><small>已收到回覆</small><strong id="totalCount">0</strong></div><div class="stat"><small>目前最多人可參加</small><strong id="maxAvailable">0</strong></div><div class="stat"><small>全員都能參加的日期</small><strong id="allFree">0</strong></div></div>
 <h3 style="margin:25px 0 6px">全員皆可出席的日期</h3><div class="sub">所有已回覆的同學在這些日期都沒有安排。</div><div id="freeDates" class="freechips"><span class="sub">尚無資料</span></div>
@@ -95,7 +95,7 @@ function showAdmin(){ $("studentView").classList.add("hidden");$("adminView").cl
 function showStudent(){ $("studentView").classList.remove("hidden");$("adminView").classList.remove("show");history.replaceState(null,"",location.pathname);}
 $("adminNav").onclick=()=>showAdmin();
 if(new URLSearchParams(location.search).has("admin"))showAdmin();
-$("loginBtn").onclick=async()=>{
+$("signupBtn").onclick=async()=>{\n const email=$("adminEmail").value.trim(),password=$("adminPassword").value;\n if(!email||password.length<8){notify($("loginNotice"),"請輸入 Email，並設定至少 8 個字元的密碼。","err");return;}\n try{const {data,error}=await supabase.auth.signUp({email,password});if(error)throw error;const uid=data.user?.id||"（未取得）";notify($("loginNotice"),"帳號已建立。請完成 Email 驗證（若有收到驗證信），並把這個 User ID 提供給專案管理者授權： "+uid,"ok");}\n catch(e){notify($("loginNotice"),"建立帳號失敗："+e.message,"err");}\n};\n$("loginBtn").onclick=async()=>{
  const email=$("adminEmail").value.trim(),password=$("adminPassword").value;
  try{const {data,error}=await supabase.auth.signInWithPassword({email,password});if(error)throw error;await loadAdmin(data.session.access_token);}
  catch(e){notify($("loginNotice"),"登入失敗："+e.message,"err");}
